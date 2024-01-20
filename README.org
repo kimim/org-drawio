@@ -1,0 +1,44 @@
+* Introduction
+A small tool to convert .drawio file to .svg file and insert it to
+orgmode on-the-fly.
+
+* Install
+From melpa with use-package:
+#+begin_src emacs-lisp
+(use-package org-drawio
+  :commands (org-drawio-add
+             org-drawio-open)
+  :custom ((org-drawio-input-dir "./draws")
+           (org-drawio-output-dir "./images")
+           (org-drawio-output-page "0")))
+#+end_src
+
+Or git submodule and use-package
+#+begin_src emacs-lisp
+(use-package org-drawio
+  :load-path "~/.emacs.d/site-lisp/org-drawio"
+  :commands (org-drawio-add
+             org-drawio-open)
+  :custom ((org-drawio-input-dir "./draws")
+           (org-drawio-output-dir "./images")
+           (org-drawio-output-page "0")))
+#+end_src
+
+* Usage
+Move cursor to =#+drawio= line, and invoke ~org-drawio-add~ to add image,
+~org-drawio-open~ to open original .drawio file.
+
+Remind! the .drawio file should be the first parameter.
+
+#+drawio: diagram.drawio
+[[./images/diagram-0.svg]]
+
+It is also possible to extract specific page.
+
+#+drawio: diagram.drawio :page 1
+[[./images/diagram-1.svg]]
+
+Even more specific about input-dir, output-dir and output file name: 
+
+#+drawio: diagram.drawio :page 0 :input-dir ./draws :output-dir ./images :output diagram.svg
+[[./images/diagram-0.svg]]

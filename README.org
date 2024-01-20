@@ -30,15 +30,24 @@ Move cursor to =#+drawio= line, and invoke ~org-drawio-add~ to add image,
 
 Remind! the .drawio file should be the first parameter.
 
+#+begin_src org
+#+drawio: diagram.drawio
+#+end_src
 #+drawio: diagram.drawio
 [[./images/diagram-0.svg]]
 
 It is also possible to extract specific page.
 
+#+begin_src org
+#+drawio: diagram.drawio :page 1
+#+end_src
 #+drawio: diagram.drawio :page 1
 [[./images/diagram-1.svg]]
 
 Even more specific about input-dir, output-dir and output file name: 
 
+#+begin_src org
+#+drawio: diagram.drawio :page 0 :input-dir ./draws :output-dir ./images :output diagram.svg
+#+end_src
 #+drawio: diagram.drawio :page 0 :input-dir ./draws :output-dir ./images :output diagram.svg
 [[./images/diagram-0.svg]]

@@ -46,6 +46,9 @@
 ;;     :custom ((org-drawio-input-dir "./draws")
 ;;              (org-drawio-output-dir "./images")
 ;;              (org-drawio-output-page "0")))
+;;
+;; You may need to install drawio and pdf2svg in your PATH.
+;;
 
 ;;; Code:
 (require 'org)

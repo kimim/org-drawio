@@ -65,6 +65,7 @@
 
 ;;; Code:
 (require 'org)
+(require 's)
 
 (defgroup org-drawio nil
   "Convert drawio to svg image."
@@ -181,10 +182,10 @@
       ;; skip #+caption, #+name of image
       (if (org-next-line-empty-p)
           (progn (end-of-line) (insert-char ?\n))
-        (while (s-starts-with? "#+" (org-current-line-string (next-line)))))
+        (while (string-prefix-p "#+" (org-current-line-string (next-line)))))
       ;; convert from drawio to svg
       (shell-command script "*org-drawio-out*" "*org-drawio-err*")
-      (when (s-starts-with? "[[" (org-current-line-string))
+      (when (string-prefix-p "[[" (org-current-line-string))
         ;; image link
         (kill-whole-line 0))
       (insert (concat "[[file:" dio-output-dir "/" dio-output-svg "]]"))

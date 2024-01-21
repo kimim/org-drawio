@@ -41,6 +41,8 @@ Remind! the .drawio file should be the first parameter.
 #+drawio: diagram.drawio
 #+end_src
 #+drawio: diagram.drawio
+#+name: workflow
+#+caption: org-drawio workflow
 [[file:./images/diagram-0.svg]]
 
 It is also possible to extract specific page.

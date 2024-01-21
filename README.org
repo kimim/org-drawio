@@ -40,6 +40,10 @@ Remind! the .drawio file should be the first parameter.
 #+begin_src org
 #+drawio: diagram.drawio
 #+end_src
+or omit the extension .drawio
+#+begin_src org
+#+drawio: diagram
+#+end_src
 #+drawio: diagram.drawio
 #+name: workflow
 #+caption: org-drawio workflow
@@ -53,7 +57,7 @@ It is also possible to extract specific page.
 #+drawio: diagram.drawio :page 1
 [[file:./images/diagram-1.svg]]
 
-Even more specific about input-dir, output-dir and output file name: 
+Even more specific about input-dir, output-dir and output file name:
 
 #+begin_src org
 #+drawio: diagram.drawio :page 0 :input-dir ./draws :output-dir ./images :output diagram.svg

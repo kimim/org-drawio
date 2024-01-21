@@ -53,6 +53,8 @@
 
 ;;; Customization
 
+;; `org-drawio-command-drawio': customzie drawio cli path
+;; `org-drawio-command-pdf2svg': customize pdf2svg cli path
 ;; `org-drawio-input-dir': drawio input folder, default is ./draws
 ;; `org-drawio-output-dir': default svg output folder, default is ./images
 ;; `org-drawio-page': page from drawio file, default is page 0
@@ -62,6 +64,8 @@
 
 ;; 2024/01/21
 ;;      * add `org-drawio-crop', suggested by zealotrush
+;;      * add `org-drawio-command-drawio'
+;;      * add `org-drawio-command-pdf2svg'
 
 ;;; Code:
 (require 'org)
@@ -73,6 +77,14 @@
   :prefix "org-drawio-"
   :link '(url-link :tag "Github" "https://github.com/kimim/org-drawio")
   :package-version '("Org-drawio" . "1.0.0"))
+
+(defcustom org-drawio-command-drawio nil
+  "Define command line path for draw.io."
+  :type 'string)
+
+(defcustom org-drawio-command-pdf2svg nil
+  "Define command line path for pdf2svg."
+  :type 'string)
 
 (defcustom org-drawio-input-dir "./draws"
   "Define input folder of drawio file."
@@ -173,11 +185,15 @@
            ;; create output dir if non exist
            (_ (when (not (file-exists-p dio-output-dir))
                 (make-directory dio-output-dir)))
-           (script (concat "draw.io -x "
+           (script (concat (or org-drawio-command-drawio
+                               "draw.io ")
+                           " -x "
                            (when org-drawio-crop " --crop ")
                            dio-input-dir "/" dio-input " -p " dio-page
                            " -o " dio-output-dir "/" dio-output-pdf " >/dev/null 2>&1 && "
-                           "pdf2svg " dio-output-dir "/" dio-output-pdf " "
+                           (or org-drawio-command-pdf2svg
+                               " pdf2svg ")
+                           dio-output-dir "/" dio-output-pdf " "
                            dio-output-dir "/" dio-output-svg " >/dev/null 2>&1")))
       ;; skip #+caption, #+name of image
       (if (org-next-line-empty-p)
@@ -207,14 +223,24 @@
     (cond
      ;; ensure that draw.io.exe is in execute PATH
      ((string-equal system-type "windows-nt")
-      (w32-shell-execute "open" "draw.io.exe" path))
+      (w32-shell-execute "open" (if org-drawio-command-drawio
+                                    org-drawio-command-drawio
+                                  "draw.io.exe")
+                         path))
      ;; TODO: need some test for other systems
      ((string-equal system-type "darwin")
-      (shell-command (format "draw.io \"%s\"" path)))
+      (shell-command (concat (or org-drawio-command-drawio
+                                 "draw.io")
+                             (format " \"%s\"" path))))
      ((string-equal system-type "gnu/linux")
-      (start-process "" nil "xdg-open" "draw.io" path))
+      (start-process "" nil "xdg-open"
+                     (or org-drawio-command-drawio
+                         "draw.io")
+                     path))
      ((string-equal system-type "cygwin")
-      (start-process "" nil "xdg-open" "draw.io" path)))))
+      (start-process "" nil "xdg-open" (or org-drawio-command-drawio
+                                           "draw.io")
+                     path)))))
 
 (provide 'org-drawio)
 ;;; org-drawio.el ends here

@@ -25,6 +25,11 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+;;; Acknowledgements:
+
+;; Inspired a lot by https://github.com/nobiot/org-transclusion from
+;; Noboru Ota <me@nobiot.com>
+
 ;;; Commentary:
 
 ;; When you are drawing with draw.io and you want to insert the svg
@@ -33,22 +38,30 @@
 ;;
 ;; - `org-drawio-add' convert drawio to svg, and insert it to org
 ;; - `org-drawio-open' open drawio file at the point
-;;
 
-;;; Acknowledgements:
+;;; Installation
 
-;; Inspired a lot by https://github.com/nobiot/org-transclusion from
-;; Noboru Ota <me@nobiot.com>
-;;
 ;; To enable, add the following:
 ;;
 ;;   (use-package org-drawio
 ;;     :custom ((org-drawio-input-dir "./draws")
 ;;              (org-drawio-output-dir "./images")
+;;              (org-drawio-output-crop t) ;; crop the image
 ;;              (org-drawio-output-page "0")))
 ;;
 ;; You may need to install drawio and pdf2svg in your PATH.
-;;
+
+;;; Customization
+
+;; `org-drawio-input-dir': drawio input folder, default is ./draws
+;; `org-drawio-output-dir': default svg output folder, default is ./images
+;; `org-drawio-page': page from drawio file, default is page 0
+;; `org-drawio-crop': whether crop the image, default is nil
+
+;;; Change log
+
+;; 2024/01/21
+;;      * add `org-drawio-crop', suggested by zealotrush
 
 ;;; Code:
 (require 'org)
@@ -71,6 +84,10 @@
 (defcustom org-drawio-page "0"
   "Define output folder of svg image."
   :type 'string)
+
+(defcustom org-drawio-crop nil
+  "Define crop of the exported image."
+  :type 'boolean)
 
 (defcustom org-drawio-dir-regex " +\\([a-z_~\\/\\-0-9\\.]*\\)[ \\t\\n]*"
   "Define regex of directry."
@@ -155,7 +172,9 @@
            ;; create output dir if non exist
            (_ (when (not (file-exists-p dio-output-dir))
                 (make-directory dio-output-dir)))
-           (script (concat "draw.io -x " dio-input-dir "/" dio-input " -p " dio-page
+           (script (concat "draw.io -x "
+                           (if org-drawio-crop " -crop ")
+                           dio-input-dir "/" dio-input " -p " dio-page
                            " -o " dio-output-dir "/" dio-output-pdf " >/dev/null 2>&1 && "
                            "pdf2svg " dio-output-dir "/" dio-output-pdf " "
                            dio-output-dir "/" dio-output-svg " >/dev/null 2>&1")))
@@ -168,7 +187,7 @@
       (when (s-starts-with? "[[" (org-current-line-string))
         ;; image link
         (kill-whole-line 0))
-      (insert (concat "[[" dio-output-dir "/" dio-output-svg "]]"))
+      (insert (concat "[[file:" dio-output-dir "/" dio-output-svg "]]"))
       ;; trash pdf file
       (delete-file (concat dio-output-dir "/" dio-output-pdf) t)
       (org-display-inline-images))))

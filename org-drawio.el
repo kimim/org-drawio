@@ -173,7 +173,7 @@
            (_ (when (not (file-exists-p dio-output-dir))
                 (make-directory dio-output-dir)))
            (script (concat "draw.io -x "
-                           (if org-drawio-crop " -crop ")
+                           (when org-drawio-crop " --crop ")
                            dio-input-dir "/" dio-input " -p " dio-page
                            " -o " dio-output-dir "/" dio-output-pdf " >/dev/null 2>&1 && "
                            "pdf2svg " dio-output-dir "/" dio-output-pdf " "

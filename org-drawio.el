@@ -62,6 +62,9 @@
 
 ;;; Change log
 
+;; 2024/01/22
+;;      * convert to svg asynchronously, thanks to twiddling
+;;
 ;; 2024/01/21
 ;;      * add `org-drawio-crop', suggested by zealotrush
 ;;      * add `org-drawio-command-drawio'
@@ -199,15 +202,19 @@
       (if (org-next-line-empty-p)
           (progn (end-of-line) (insert-char ?\n))
         (while (string-prefix-p "#+" (org-current-line-string (next-line)))))
-      ;; convert from drawio to svg
-      (shell-command script "*org-drawio-out*" "*org-drawio-err*")
+      ;; convert from drawio to svg asynchronously, thanks to twiddling
+      (let ((process (start-process-shell-command "org-drawio" nil script)))
+        (set-process-sentinel
+         process `(lambda (process event)
+                    (when (string-match-p "finished" event)
+                      ;; trash pdf file
+                      (delete-file ,(concat dio-output-dir "/" dio-output-pdf) t)
+                      ;; refresh image
+                      (org-redisplay-inline-images)))))
       (when (string-prefix-p "[[" (org-current-line-string))
-        ;; image link
+        ;; when it is image link
         (kill-whole-line 0))
-      (insert (concat "[[file:" dio-output-dir "/" dio-output-svg "]]"))
-      ;; trash pdf file
-      (delete-file (concat dio-output-dir "/" dio-output-pdf) t)
-      (org-display-inline-images))))
+      (insert (concat "[[file:" dio-output-dir "/" dio-output-svg "]]")))))
 
 ;;;###autoload
 (defun org-drawio-open ()

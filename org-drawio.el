@@ -59,9 +59,14 @@
 ;; `org-drawio-output-dir': default svg output folder, default is ./images
 ;; `org-drawio-page': page from drawio file, default is page 0
 ;; `org-drawio-crop': whether crop the image, default is nil
+;; `org-drawio-dir-regex': customize folder regex
+;; `org-drawio-file-regex': customize file name regex
 
 ;;; Change log
 
+;; 2024/01/24
+;;      * required that all parameters be double quoted. thanks to owensys
+;;
 ;; 2024/01/22
 ;;      * convert to svg asynchronously, thanks to twiddling
 ;;
@@ -105,13 +110,19 @@
   "Define crop of the exported image."
   :type 'boolean)
 
-(defcustom org-drawio-dir-regex " +\\([a-z_~\\/\\-0-9\\.]*\\)[ \\t\\n]*"
-  "Define regex of directry."
+(defcustom org-drawio-dir-regex
+  "\"\\([\u4e00-\u9fa5:~ \\/a-z_\\-\s0-9\\.]+\\)\""
+  "Define regex of directry. Currently support Chinese charaters."
+  :type 'string)
+
+(defcustom org-drawio-file-regex
+  "\"\\([\u4e00-\u9fa5:~ \\/a-z_\\-\s0-9\\.]+\\)\""
+  "Define regex of file. Currently support Chinese charaters."
   :type 'string)
 
 (defun org-drawio-keyword-value-input-dir (string)
   "Convert a keyword STRING to plist."
-  (when (string-match (concat ":input-dir"
+  (when (string-match (concat ":input-dir +"
                               org-drawio-dir-regex)
                       string)
     (list :input-dir
@@ -119,13 +130,14 @@
 
 (defun org-drawio-keyword-value-input (string)
  "Convert a keyword STRING to plist."
-  (when (string-match "^\\([a-z_\\-0-9\\.]+*\\)[ \\t\\n]*" string)
+ (when (string-match (concat "^" org-drawio-file-regex)
+                     string)
     (list :input
           (org-trim (org-strip-quotes (match-string 1 string))))))
 
 (defun org-drawio-keyword-value-output-dir (string)
   "Convert a keyword STRING to plist."
-  (when (string-match (concat ":output-dir"
+  (when (string-match (concat ":output-dir +"
                               org-drawio-dir-regex)
                       string)
     (list :output-dir
@@ -133,7 +145,8 @@
 
 (defun org-drawio-keyword-value-output (string)
   "Convert a keyword STRING to plist."
-  (when (string-match ":output +\\(.*\\)[ \\t\\n]*" string)
+  (when (string-match (concat ":output +" org-drawio-file-regex)
+                      string)
     (list :output
           (org-trim (org-strip-quotes (match-string 1 string))))))
 
@@ -179,25 +192,33 @@
                          org-drawio-page))
            (dio-output-dir (or (plist-get keyword-plist :output-dir)
                                org-drawio-output-dir))
-           (dio-output (or (plist-get keyword-plist :output)
-                           (file-name-with-extension dio-input "svg")))
-           (dio-output-svg
-            (file-name-with-extension
-             (concat (file-name-sans-extension dio-output) "-" dio-page) "svg"))
+           (dio-output (plist-get keyword-plist :output))
+           ;; if output file specified, use it, otherwise append page to it.
+           (dio-output-svg (if dio-output
+                               (file-name-with-extension dio-output "svg")
+                             (file-name-with-extension
+                              (concat (file-name-sans-extension dio-output)
+                                      "-" dio-page)
+                              "svg")))
            (dio-output-pdf (file-name-with-extension dio-output-svg "pdf"))
            ;; create output dir if non exist
            (_ (when (not (file-exists-p dio-output-dir))
                 (make-directory dio-output-dir)))
-           (script (concat (or org-drawio-command-drawio
-                               "draw.io ")
-                           " -x "
-                           (when org-drawio-crop " --crop ")
-                           dio-input-dir "/" dio-input " -p " dio-page
-                           " -o " dio-output-dir "/" dio-output-pdf " >/dev/null 2>&1 && "
+           (script (format "%s -x %s%s/%s -p %s -o %s/%s >/dev/null 2>&1 && \
+%s %s/%s %s/%s >/dev/null 2>&1"
+                           (or org-drawio-command-drawio
+                               "draw.io")
+                           (if org-drawio-crop "--crop " "")
+                           (shell-quote-argument dio-input-dir)
+                           (shell-quote-argument dio-input) dio-page
+                           (shell-quote-argument dio-output-dir)
+                           (shell-quote-argument dio-output-pdf)
                            (or org-drawio-command-pdf2svg
-                               " pdf2svg ")
-                           dio-output-dir "/" dio-output-pdf " "
-                           dio-output-dir "/" dio-output-svg " >/dev/null 2>&1")))
+                               "pdf2svg")
+                           (shell-quote-argument dio-output-dir)
+                           (shell-quote-argument dio-output-pdf)
+                           (shell-quote-argument dio-output-dir)
+                           (shell-quote-argument dio-output-svg))))
       ;; skip #+caption, #+name of image
       (if (org-next-line-empty-p)
           (progn (end-of-line) (insert-char ?\n))
@@ -225,7 +246,7 @@
                      (plist-get keyword-plist :input) "drawio"))
          (dio-input-dir (or (plist-get keyword-plist :input-dir)
                             org-drawio-input-dir))
-         (path (file-truename
+         (path (shell-quote-argument
                 (concat dio-input-dir "/" dio-input))))
     (cond
      ;; ensure that draw.io.exe is in execute PATH

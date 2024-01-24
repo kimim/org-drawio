@@ -35,16 +35,19 @@ Or git submodule and use-package
 Move cursor to =#+drawio= line, and invoke ~org-drawio-add~ to add image,
 ~org-drawio-open~ to open original .drawio file.
 
-Remind! the .drawio file should be the first parameter.
+*Remind!*
+- the .drawio file should be the first parameter.
+- in order to support whitespace in file and dir name, please "quote
+  all of them".
 
 #+begin_src org
-#+drawio: diagram.drawio
+#+drawio: "diagram.drawio"
 #+end_src
 or omit the extension .drawio
 #+begin_src org
-#+drawio: diagram
+#+drawio: "diagram"
 #+end_src
-#+drawio: diagram.drawio
+#+drawio: "diagram"
 #+name: workflow
 #+caption: org-drawio workflow
 [[file:./images/diagram-0.svg]]
@@ -52,15 +55,15 @@ or omit the extension .drawio
 It is also possible to extract specific page.
 
 #+begin_src org
-#+drawio: diagram.drawio :page 1
+#+drawio: "diagram.drawio" :page 1
 #+end_src
-#+drawio: diagram.drawio :page 1
+#+drawio: "diagram.drawio" :page 1
 [[file:./images/diagram-1.svg]]
 
 Even more specific about input-dir, output-dir and output file name:
 
 #+begin_src org
-#+drawio: diagram.drawio :page 0 :input-dir ./draws :output-dir ./images :output diagram.svg
+#+drawio: "diagram.drawio" :page 0 :input-dir "./draws" :output-dir "./images" :output "diagram.svg"
 #+end_src
-#+drawio: diagram.drawio :page 0 :input-dir ./draws :output-dir ./images :output diagram.svg
-[[./images/diagram-0.svg]]
+#+drawio: "diagram.drawio" :page 0 :input-dir "./draws" :output-dir "./images" :output "diagram.svg"
+[[file:./images/diagram.svg]]

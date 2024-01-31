@@ -111,12 +111,12 @@
   :type 'boolean)
 
 (defcustom org-drawio-dir-regex
-  "\"\\([\u4e00-\u9fa5:~ \\/a-z_\\-\s0-9\\.]+\\)\""
+  "\"\\([\u4e00-\u9fa5:~ \\/a-z_\s0-9\\.-]+\\)\""
   "Define regex of directry. Currently support Chinese charaters."
   :type 'string)
 
 (defcustom org-drawio-file-regex
-  "\"\\([\u4e00-\u9fa5:~ \\/a-z_\\-\s0-9\\.]+\\)\""
+  "\"\\([\u4e00-\u9fa5:~ \\/a-z_\s0-9\\.-]+\\)\""
   "Define regex of file. Currently support Chinese charaters."
   :type 'string)
 
@@ -197,7 +197,7 @@
            (dio-output-svg (if dio-output
                                (file-name-with-extension dio-output "svg")
                              (file-name-with-extension
-                              (concat (file-name-sans-extension dio-output)
+                              (concat (file-name-sans-extension dio-input)
                                       "-" dio-page)
                               "svg")))
            (dio-output-pdf (file-name-with-extension dio-output-svg "pdf"))
@@ -218,7 +218,9 @@
                            (shell-quote-argument dio-output-dir)
                            (shell-quote-argument dio-output-pdf)
                            (shell-quote-argument dio-output-dir)
-                           (shell-quote-argument dio-output-svg))))
+                           (shell-quote-argument dio-output-svg)))
+           ;; special handling, home path should not be backquoted
+           (script (string-replace "\\~" "~" script)))
       ;; skip #+caption, #+name of image
       (if (org-next-line-empty-p)
           (progn (end-of-line) (insert-char ?\n))
@@ -227,6 +229,7 @@
       (let ((process (start-process-shell-command "org-drawio" nil script)))
         (set-process-sentinel
          process `(lambda (process event)
+                    (message event)
                     (when (string-match-p "finished" event)
                       ;; trash pdf file
                       (delete-file ,(concat dio-output-dir "/" dio-output-pdf) t)
@@ -246,15 +249,11 @@
                      (plist-get keyword-plist :input) "drawio"))
          (dio-input-dir (or (plist-get keyword-plist :input-dir)
                             org-drawio-input-dir))
-         (path (shell-quote-argument
-                (concat dio-input-dir "/" dio-input))))
+         (path (concat dio-input-dir "/" dio-input)))
     (cond
      ;; ensure that draw.io.exe is in execute PATH
      ((string-equal system-type "windows-nt")
-      (w32-shell-execute "open" (if org-drawio-command-drawio
-                                    org-drawio-command-drawio
-                                  "draw.io.exe")
-                         path))
+      (w32-shell-execute "open" path))
      ;; TODO: need some test for other systems
      ((string-equal system-type "darwin")
       (shell-command (concat (or org-drawio-command-drawio

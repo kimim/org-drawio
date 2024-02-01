@@ -77,7 +77,6 @@
 
 ;;; Code:
 (require 'org)
-(require 's)
 
 (defgroup org-drawio nil
   "Convert drawio to svg image."

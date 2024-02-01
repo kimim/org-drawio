@@ -223,7 +223,7 @@
       ;; skip #+caption, #+name of image
       (if (org-next-line-empty-p)
           (progn (end-of-line) (insert-char ?\n))
-        (while (string-prefix-p "#+" (org-current-line-string (next-line)))))
+        (while (string-prefix-p "#+" (org-current-line-string (forward-line)))))
       ;; convert from drawio to svg asynchronously, thanks to twiddling
       (let ((process (start-process-shell-command "org-drawio" nil script)))
         (set-process-sentinel

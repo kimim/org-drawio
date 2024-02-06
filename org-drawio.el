@@ -179,7 +179,7 @@
         plist))))
 
 (defun org-drawio-new-if-not-exist (dir file)
-  "Create an empty drawio diagram."
+  "If a FILE or DIR not exsit, create an empty drawio diagram."
   (let ((path (concat dir "/" file)))
     (when (not (file-exists-p path))
       (when (not (file-exists-p dir))

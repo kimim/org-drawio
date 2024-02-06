@@ -178,6 +178,27 @@
                   (setq plist (append plist (funcall fn str)))))
         plist))))
 
+(defun org-drawio-new-if-not-exist (dir file)
+  "Create an empty drawio diagram."
+  (let ((path (concat dir "/" file)))
+    (when (not (file-exists-p path))
+      (when (not (file-exists-p dir))
+        (make-directory dir))
+      (make-empty-file file dir)
+      (write-region
+       "<mxfile>
+  <diagram>
+    <mxGraphModel>
+      <root>
+        <mxCell parent=\"1\" vertex=\"1\">
+          <mxGeometry x=\"360\" y=\"240\" width=\"120\" height=\"60\" as=\"geometry\" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>"
+       nil path))))
+
 ;;;###autoload
 (defun org-drawio-add ()
   "Convert .drawio file to .svg file, and insert svg to orgmode."
@@ -188,6 +209,7 @@
                               org-drawio-input-dir))
            (dio-input (file-name-with-extension
                        (plist-get keyword-plist :input) "drawio"))
+           (_ (org-drawio-new-if-not-exist dio-input-dir dio-input))
            (dio-page (or (plist-get keyword-plist :page)
                          org-drawio-page))
            (dio-output-dir (or (plist-get keyword-plist :output-dir)
@@ -224,7 +246,8 @@
       ;; skip #+caption, #+name of image
       (if (org-next-line-empty-p)
           (progn (end-of-line) (insert-char ?\n))
-        (while (string-prefix-p "#+" (org-current-line-string (next-line)))))
+        (while (string-prefix-p "#+" (org-current-line-string))
+          (forward-line)))
       ;; convert from drawio to svg asynchronously, thanks to twiddling
       (let ((process (start-process-shell-command "org-drawio" nil script)))
         (set-process-sentinel
@@ -249,16 +272,19 @@
                      (plist-get keyword-plist :input) "drawio"))
          (dio-input-dir (or (plist-get keyword-plist :input-dir)
                             org-drawio-input-dir))
+         (_ (org-drawio-new-if-not-exist dio-input-dir dio-input))
          (path (concat dio-input-dir "/" dio-input)))
     (cond
      ;; ensure that draw.io.exe is in execute PATH
      ((string-equal system-type "windows-nt")
-      (w32-shell-execute "open" path))
+      (if (fboundp 'w32-shell-execute)
+          (w32-shell-execute "open" path)))
      ;; TODO: need some test for other systems
      ((string-equal system-type "darwin")
       (shell-command (concat (or org-drawio-command-drawio
                                  "draw.io")
-                             (format " \"%s\"" path))))
+                             (shell-quote-argument
+                              (format " %s" path)))))
      ((string-equal system-type "gnu/linux")
       (start-process "" nil "xdg-open"
                      (or org-drawio-command-drawio

@@ -39,7 +39,7 @@
 ;; - `org-drawio-add' convert drawio to svg, and insert it to org
 ;; - `org-drawio-open' open drawio file at the point
 
-;;; Installation
+;;; Installation:
 
 ;; To enable, add the following:
 ;;
@@ -51,7 +51,7 @@
 ;;
 ;; You may need to install drawio and pdf2svg in your PATH.
 
-;;; Customization
+;;; Customization:
 
 ;; `org-drawio-command-drawio': customzie drawio cli path
 ;; `org-drawio-command-pdf2svg': customize pdf2svg cli path
@@ -62,7 +62,7 @@
 ;; `org-drawio-dir-regex': customize folder regex
 ;; `org-drawio-file-regex': customize file name regex
 
-;;; Change log
+;;; Change log:
 
 ;; 2024/01/24
 ;;      * required that all parameters be double quoted. thanks to owensys
@@ -76,6 +76,7 @@
 ;;      * add `org-drawio-command-pdf2svg'
 
 ;;; Code:
+
 (require 'org)
 (require 'org-element)
 

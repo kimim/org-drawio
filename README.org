@@ -2,6 +2,8 @@
 A small tool to convert .drawio file to .svg file and insert it to
 orgmode on-the-fly.
 
+You may want to try a more general solution ([[https://github.com/kimim/chatu][https://github.com/kimim/chatu]]) which supports both orgmode and markdown, and drawio, plantuml, clojure, R ...
+
 * Install
 Before using org-drawio, you may need to install drawio and pdf2svg in
 your PATH.

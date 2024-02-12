@@ -229,8 +229,8 @@
                 (make-directory dio-output-dir)))
            (script (format "%s -x %s%s/%s -p %s -o %s/%s >/dev/null 2>&1 && \
 %s %s/%s %s/%s >/dev/null 2>&1"
-                           (or org-drawio-command-drawio
-                               "draw.io")
+                           (file-truename
+                            (executable-find (or org-drawio-command-drawio "draw.io")))
                            (if org-drawio-crop "--crop " "")
                            (shell-quote-argument dio-input-dir)
                            (shell-quote-argument dio-input) dio-page
@@ -282,10 +282,10 @@
           (w32-shell-execute "open" path)))
      ;; TODO: need some test for other systems
      ((string-equal system-type "darwin")
-      (shell-command (concat (or org-drawio-command-drawio
-                                 "draw.io")
-                             (shell-quote-argument
-                              (format " %s" path)))))
+      (start-process "" nil "open" "-a"
+                     (or org-drawio-command-drawio
+                         "draw.io")
+                     path))
      ((string-equal system-type "gnu/linux")
       (start-process "" nil "xdg-open"
                      (or org-drawio-command-drawio

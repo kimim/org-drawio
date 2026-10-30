@@ -287,7 +287,7 @@
                          "draw.io")
                      path))
      ((string-equal system-type "gnu/linux")
-      (start-process "" nil "xdg-open"
+      (start-process "org-drawio" nil
                      (or org-drawio-command-drawio
                          "draw.io")
                      path))
